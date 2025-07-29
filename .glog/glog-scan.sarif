@@ -12,7 +12,19 @@
           "informationUri": "https://www.glog.ai",
           "rules": [
             {
-              "id": "glog-535fe82b-5c82-47d6-8dac-5daf9534a2b3",
+              "id": "glog-df22fe41-29ca-4c0d-b9c8-b97b84088416",
+              "help": {
+                "text": "",
+                "markdown": "### Description\n\nThe \"Code Injection Vulnerability in GitHub Actions Using `${{...}}` Interpolation\" refers to a security flaw where untrusted input is interpolated directly into shell commands. This can lead to command injection, allowing attackers to execute arbitrary commands in the context of the GitHub Actions runner. In the provided code snippet, the use of `${{ inputs.lang }}`, `${{ inputs.ignore }}`, and `${{ inputs.client }}` without proper sanitization or escaping can be exploited if these inputs are controlled by an attacker.\n\n### General Mitigation Advice\n\n1. **Input Validation**: Always validate and sanitize inputs before using them in shell commands. Ensure that inputs conform to expected patterns or values.\n2. **Use Safe APIs**: Prefer using APIs or libraries that handle input safely, avoiding direct shell command execution when possible.\n3. **Escape Inputs**: If shell execution is necessary, ensure that inputs are properly escaped to prevent injection.\n4. **Least Privilege**: Run scripts with the least privilege necessary to limit the impact of a potential injection.\n\n### Source Code Fix Recommendation\n\nTo mitigate the vulnerability, ensure that inputs are properly escaped or validated. Here's a revised version of the code:\n\n```yaml\nrun: |\n        TOOL_CMD=\"${{ github.action_path }}/glog.sh scan --path $GITHUB_WORKSPACE\"\n        ARGS=()\n        if [ ! -z \"${{ inputs.lang }}\" ]; then\n          ARGS+=(\"--lang\" \"$(printf '%q' \"${{ inputs.lang }}\" | sed 's/[^a-zA-Z0-9_-]//g')\")\n        fi\n        if [ ! -z \"${{ inputs.ignore }}\" ]; then\n          ARGS+=(\"--ignore\" \"$(printf '%q' \"${{ inputs.ignore }}\" | sed 's/[^a-zA-Z0-9_-]//g')\")\n        fi\n        if [ ! -z \"${{ inputs.client }}\" ]; then\n          ARGS+=(\"--client\" \"$(printf '%q' \"${{ inputs.client }}\" | sed 's/[^a-zA-Z0-9_-]//g')\")\n        fi\n        $TOOL_CMD \"${ARGS[@]}\"\n```\n\nIn this fix, a `sed` command is used to strip out any characters that are not alphanumeric, underscores, or hyphens, which helps prevent injection.\n\n### Library Dependencies\n\nThe code example provided is a shell script executed within a GitHub Actions workflow, and it does not directly depend on any JavaScript libraries. However, it assumes the presence of a shell environment and standard Unix utilities like `sed`.\n\n### Relevant Resources\n\n- [OWASP Command Injection](https://owasp.org/www-community/attacks/Command_Injection)\n- [CWE-77: Improper Neutralization of Special Elements used in a Command ('Command Injection')](https://cwe.mitre.org/data/definitions/77.html)"
+              },
+              "properties": {
+                "tags": [
+                  "yaml.github-actions.security.run-shell-injection.run-shell-injection"
+                ]
+              }
+            },
+            {
+              "id": "glog-fdef6bb0-eab0-435f-98da-13978480e8a0",
               "help": {
                 "text": "",
                 "markdown": "### Description\n\nThe \"Missing CSRF Protection in Express Application\" vulnerability occurs when an Express.js application does not implement Cross-Site Request Forgery (CSRF) protection. CSRF is an attack that tricks the victim into submitting a malicious request. It inherits the identity and privileges of the victim to perform an undesired function on their behalf. This can lead to unauthorized actions being performed on behalf of the user, such as changing account details or making transactions.\n\n### General Mitigation Advice\n\nTo mitigate CSRF vulnerabilities, it is essential to implement CSRF protection mechanisms. This can be achieved by using middleware that generates and validates CSRF tokens for each user session. These tokens should be included in any state-changing requests to ensure that the request is legitimate.\n\n### Source Code Fix Recommendation\n\nTo fix the CSRF vulnerability in an Express application, you can use the `csurf` middleware. Below is an example of how to implement CSRF protection in an Express application:\n\n```javascript\nconst express = require('express');\nconst cookieParser = require('cookie-parser');\nconst csrf = require('csurf');\n\nconst app = express();\n\n// Setup middleware\napp.use(cookieParser());\napp.use(csrf({ cookie: true }));\n\n// Example route\napp.get('/form', (req, res) => {\n  // Pass the CSRF token to the view\n  res.send(`<form action=\"/process\" method=\"POST\">\n              <input type=\"hidden\" name=\"_csrf\" value=\"${req.csrfToken()}\">\n              <button type=\"submit\">Submit</button>\n            </form>`);\n});\n\napp.post('/process', (req, res) => {\n  res.send('Data is being processed');\n});\n\napp.listen(3000, () => {\n  console.log('Server is running on port 3000');\n});\n```\n\n### Library Dependencies\n\nTo execute the code example properly, the following library dependencies are required:\n\n- `express`\n- `cookie-parser`\n- `csurf`\n\nYou can install these dependencies using npm:\n\n```bash\nnpm install express cookie-parser csurf\n```\n\n### OWASP Resources\n\n- [OWASP Cross-Site Request Forgery (CSRF) Prevention Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html)\n\n### Common Weakness Enumeration (CWE)\n\n- [CWE-352: Cross-Site Request Forgery (CSRF)](https://cwe.mitre.org/data/definitions/352.html)"
@@ -24,7 +36,7 @@
               }
             },
             {
-              "id": "glog-0ee62119-73a9-4254-b5e9-a307201d3688",
+              "id": "glog-20b5708f-f6f6-4141-bc0d-6926ca1b8844",
               "help": {
                 "text": "",
                 "markdown": "### Description\n\nThe \"Hardcoded API Key Detected\" vulnerability occurs when sensitive information, such as an API key, is embedded directly within the source code. This practice can lead to unauthorized access if the code is exposed, as the API key can be extracted and misused by malicious actors. In JavaScript, this is particularly risky because the code is often executed on the client side, making it easier for attackers to access the source code.\n\n### General Mitigation Advice\n\n1. **Environment Variables**: Store API keys in environment variables instead of hardcoding them in the source code. This keeps sensitive information out of the codebase.\n2. **Configuration Files**: Use configuration files that are not included in version control to store API keys and other sensitive information.\n3. **Secrets Management Tools**: Utilize secrets management tools like AWS Secrets Manager, HashiCorp Vault, or Azure Key Vault to securely store and manage API keys.\n4. **Access Controls**: Implement strict access controls and permissions to limit who can view and modify API keys.\n5. **Regular Audits**: Conduct regular security audits and code reviews to ensure that API keys and other sensitive information are not exposed.\n\n### Source Code Fix Recommendation\n\nInstead of hardcoding the API key, use an environment variable to store it securely. Here's how you can modify the code:\n\n```javascript\n// Load environment variables\nrequire('dotenv').config();\n\n// Access the API key from environment variables\nconst API_KEY = process.env.API_KEY;\n\n// Example function using the API key\nfunction useApiKey() {\n    console.log(`Using API Key: ${API_KEY}`);\n}\n\nuseApiKey();\n```\n\n### Library Dependencies\n\nTo execute the above code example properly, you need the following library:\n\n- `dotenv`: This library is used to load environment variables from a `.env` file into `process.env`.\n\nYou can install it using npm:\n\n```bash\nnpm install dotenv\n```\n\n### Relevant Resources\n\n- [OWASP API Security Project](https://owasp.org/www-project-api-security/)\n- [OWASP Top Ten](https://owasp.org/www-project-top-ten/)\n- [CWE-798: Use of Hard-coded Credentials](https://cwe.mitre.org/data/definitions/798.html)"
@@ -32,30 +44,6 @@
               "properties": {
                 "tags": [
                   "resources.rules.node_api_key"
-                ]
-              }
-            },
-            {
-              "id": "glog-6235e870-5139-45ca-b90c-4eeb0e0939df",
-              "help": {
-                "text": "",
-                "markdown": "### Description\n\nThe \"Code Injection Vulnerability in GitHub Actions Using `${{...}}` Interpolation\" refers to a security flaw where untrusted input is interpolated directly into shell commands within a GitHub Actions workflow. This can lead to arbitrary code execution if an attacker is able to manipulate the input values. In the provided code snippet, the use of `${{ inputs.lang }}`, `${{ inputs.ignore }}`, and `${{ inputs.client }}` without proper sanitization or validation can allow an attacker to inject malicious shell commands.\n\n### General Mitigation Advice\n\n1. **Input Validation and Sanitization**: Always validate and sanitize inputs before using them in shell commands. Ensure that inputs conform to expected patterns and do not contain any special characters that could be used for command injection.\n\n2. **Use Quoting**: Properly quote variables when using them in shell commands to prevent them from being interpreted as separate commands or options.\n\n3. **Use Safe APIs**: Where possible, use APIs or libraries that provide safer ways to execute commands without direct shell interpolation.\n\n4. **Limit Input Sources**: Restrict the sources of input to trusted entities and minimize the number of inputs that can affect command execution.\n\n### Source Code Fix Recommendation\n\nTo mitigate the vulnerability in the provided code snippet, ensure that inputs are properly quoted and validated. Here's a revised version of the code:\n\n```yaml\nrun: |\n        TOOL_CMD=\"${{ github.action_path }}/glog.sh scan --path $GITHUB_WORKSPACE\"\n        ARGS=()\n        if [ ! -z \"${{ inputs.lang }}\" ]; then\n          ARGS+=(\"--lang\" \"$(printf '%q' \"${{ inputs.lang }}\")\")\n        fi\n        if [ ! -z \"${{ inputs.ignore }}\" ]; then\n          ARGS+=(\"--ignore\" \"$(printf '%q' \"${{ inputs.ignore }}\")\")\n        fi\n        if [ ! -z \"${{ inputs.client }}\" ]; then\n          ARGS+=(\"--client\" \"$(printf '%q' \"${{ inputs.client }}\")\")\n        fi\n        $TOOL_CMD \"${ARGS[@]}\"\n```\n\nIn this fix, `printf '%q'` is used to safely escape any special characters in the input values, preventing them from being interpreted as shell commands.\n\n### Library Dependencies\n\nThe code snippet provided is a shell script executed within a GitHub Actions workflow and does not directly depend on any JavaScript libraries. However, it assumes the presence of a shell environment and the `glog.sh` script.\n\n### OWASP Resources\n\n- [OWASP Command Injection](https://owasp.org/www-community/attacks/Command_Injection)\n\n### Common Weakness Enumeration (CWE)\n\n- [CWE-77: Improper Neutralization of Special Elements used in a Command ('Command Injection')](https://cwe.mitre.org/data/definitions/77.html)"
-              },
-              "properties": {
-                "tags": [
-                  "yaml.github-actions.security.run-shell-injection.run-shell-injection"
-                ]
-              }
-            },
-            {
-              "id": "glog-015beb88-0f97-4661-afdc-0e138c4a0f71",
-              "help": {
-                "text": "",
-                "markdown": "### Description\n\nThe \"Code Injection Vulnerability in GitHub Actions Using `${{...}}` Interpolation\" refers to a security flaw where untrusted input is interpolated directly into a command line string within a GitHub Actions workflow. This can lead to command injection if the input is not properly sanitized, allowing an attacker to execute arbitrary commands in the context of the workflow runner.\n\nIn the provided example, the command:\n\n```yaml\nrun: echo \"${{ inputs.github-token }}\" | docker login ghcr.io -u \"${{ github.actor }}\" --password-stdin\n```\n\nis vulnerable because it directly interpolates `${{ inputs.github-token }}` and `${{ github.actor }}` into a shell command. If these inputs are not properly controlled, an attacker could manipulate them to execute unintended commands.\n\n### General Mitigation Advice\n\n1. **Input Validation and Sanitization**: Ensure that all inputs are validated and sanitized before being used in command-line operations. Avoid using untrusted input directly in shell commands.\n\n2. **Use of Safe APIs**: Where possible, use APIs or libraries that abstract away shell execution and provide safer interfaces for performing operations.\n\n3. **Environment Variables**: Use environment variables to pass sensitive data instead of direct interpolation in shell commands.\n\n4. **Least Privilege Principle**: Limit the permissions of the GitHub token and other credentials to the minimum necessary for the workflow.\n\n### Source Code Fix Recommendation\n\nTo mitigate the vulnerability, avoid direct interpolation of inputs in shell commands. Instead, use environment variables or other secure methods to handle sensitive data. Here's a revised version of the vulnerable code:\n\n```yaml\nenv:\n  GITHUB_TOKEN: ${{ inputs.github-token }}\n  GITHUB_ACTOR: ${{ github.actor }}\n\nrun: |\n  echo \"$GITHUB_TOKEN\" | docker login ghcr.io -u \"$GITHUB_ACTOR\" --password-stdin\n```\n\n### Library Dependencies\n\nThe example provided does not require any additional library dependencies to execute properly, as it relies on built-in shell capabilities and Docker.\n\n### Relevant OWASP Resources\n\n- [OWASP Command Injection](https://owasp.org/www-community/attacks/Command_Injection)\n- [OWASP Top Ten](https://owasp.org/www-project-top-ten/)\n\n### Common Weakness Enumeration (CWE)\n\n- [CWE-77: Improper Neutralization of Special Elements used in a Command ('Command Injection')](https://cwe.mitre.org/data/definitions/77.html)"
-              },
-              "properties": {
-                "tags": [
-                  "yaml.github-actions.security.run-shell-injection.run-shell-injection"
                 ]
               }
             }
@@ -71,26 +59,26 @@
       "language": "en-US",
       "results": [
         {
-          "ruleId": "glog-0ee62119-73a9-4254-b5e9-a307201d3688",
+          "ruleId": "glog-df22fe41-29ca-4c0d-b9c8-b97b84088416",
           "kind": "fail",
           "level": "warning",
           "message": {
-            "text": "Hardcoded API Key Detected"
+            "text": "Code Injection Vulnerability in GitHub Actions Using `${{...}}` Interpolation"
           },
           "locations": [
             {
               "physicalLocation": {
                 "artifactLocation": {
-                  "uri": "index.js",
+                  "uri": ".github/glog-action/action.yml",
                   "uriBaseId": "%SRCROOT%"
                 },
                 "region": {
-                  "startLine": 19,
-                  "startColumn": 1,
-                  "endLine": 19,
-                  "endColumn": 60,
+                  "startLine": 49,
+                  "startColumn": 7,
+                  "endLine": 61,
+                  "endColumn": 32,
                   "snippet": {
-                    "text": "const API_KEY = 'zaCELgL.0imfnc8mVLWwsAawjYr4Rx-Af50DDqtlx'"
+                    "text": "      run: |\n        TOOL_CMD=\"${{ github.action_path }}/glog.sh scan --path $GITHUB_WORKSPACE\"\n        ARGS=()\n        if [ ! -z \"${{ inputs.lang }}\" ]; then\n          ARGS+=(\"--lang\" \"$(printf '%q' \"${{ inputs.lang }}\")\")\n        fi\n        if [ ! -z \"${{ inputs.ignore }}\" ]; then\n          ARGS+=(\"--ignore\" \"$(printf '%q' \"${{ inputs.ignore }}\")\")\n        fi\n        if [ ! -z \"${{ inputs.client }}\" ]; then\n          ARGS+=(\"--client\" \"$(printf '%q' \"${{ inputs.client }}\")\")\n        fi\n        $TOOL_CMD \"${ARGS[@]}\""
                   }
                 }
               }
@@ -102,7 +90,7 @@
           "properties": {}
         },
         {
-          "ruleId": "glog-535fe82b-5c82-47d6-8dac-5daf9534a2b3",
+          "ruleId": "glog-fdef6bb0-eab0-435f-98da-13978480e8a0",
           "kind": "fail",
           "level": "warning",
           "message": {
@@ -133,57 +121,26 @@
           "properties": {}
         },
         {
-          "ruleId": "glog-6235e870-5139-45ca-b90c-4eeb0e0939df",
+          "ruleId": "glog-20b5708f-f6f6-4141-bc0d-6926ca1b8844",
           "kind": "fail",
           "level": "warning",
           "message": {
-            "text": "Code Injection Vulnerability in GitHub Actions Using `${{...}}` Interpolation"
+            "text": "Hardcoded API Key Detected"
           },
           "locations": [
             {
               "physicalLocation": {
                 "artifactLocation": {
-                  "uri": ".github/glog-action/action.yml",
+                  "uri": "index.js",
                   "uriBaseId": "%SRCROOT%"
                 },
                 "region": {
-                  "startLine": 45,
-                  "startColumn": 7,
-                  "endLine": 57,
-                  "endColumn": 32,
+                  "startLine": 19,
+                  "startColumn": 1,
+                  "endLine": 19,
+                  "endColumn": 60,
                   "snippet": {
-                    "text": "      run: |\n        TOOL_CMD=\"${{ github.action_path }}/glog.sh scan --path $GITHUB_WORKSPACE\"\n        ARGS=()\n        if [ ! -z \"${{ inputs.lang }}\" ]; then\n          ARGS+=(\"--lang\" \"${{ inputs.lang }}\")\n        fi\n        if [ ! -z \"${{ inputs.ignore }}\" ]; then\n          ARGS+=(\"--ignore\" \"${{ inputs.ignore }}\")\n        fi\n        if [ ! -z \"${{ inputs.client }}\" ]; then\n          ARGS+=(\"--client\" \"${{ inputs.client }}\")\n        fi\n        $TOOL_CMD \"${ARGS[@]}\""
-                  }
-                }
-              }
-            }
-          ],
-          "fingerprints": {
-            "matchBasedId/v1": "requires login"
-          },
-          "properties": {}
-        },
-        {
-          "ruleId": "glog-015beb88-0f97-4661-afdc-0e138c4a0f71",
-          "kind": "fail",
-          "level": "warning",
-          "message": {
-            "text": "Code Injection Vulnerability in GitHub Actions Using `${{...}}` Interpolation"
-          },
-          "locations": [
-            {
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": ".github/glog-action/action.yml",
-                  "uriBaseId": "%SRCROOT%"
-                },
-                "region": {
-                  "startLine": 41,
-                  "startColumn": 7,
-                  "endLine": 41,
-                  "endColumn": 110,
-                  "snippet": {
-                    "text": "      run: echo \"${{ inputs.github-token }}\" | docker login ghcr.io -u \"${{ github.actor }}\" --password-stdin"
+                    "text": "const API_KEY = 'zaCELgL.0imfnc8mVLWwsAawjYr4Rx-Af50DDqtlx'"
                   }
                 }
               }
